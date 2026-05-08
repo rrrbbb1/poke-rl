@@ -1,0 +1,11 @@
+name: poke-rl
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11
+  - pip
+  - polars
+  - requests
+  - tqdm
+  - pandas
+  - pyarrow
