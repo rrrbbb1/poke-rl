@@ -7,29 +7,68 @@ function showBattleActions(request) {
 
     const active = request.active?.[0];
 
+    // --------------------
+    // FORCE SWITCH
+    // --------------------
     if (request.forceSwitch) {
         console.log('Must switch:');
+
         side.pokemon.forEach((p, i) => {
-            if (!p.fainted) {
-                console.log(`  switch ${i + 1} -> ${getPokemonName(p)}`);
-            }
+            const index = i + 1;
+
+            const isFainted = p.fainted || p.condition.startsWith('0 fnt');
+            const isActive = p.active;
+
+            const status = (!isFainted && !isActive) ? '[OK]' : '[DISABLED]';
+
+            console.log(`  switch ${index} -> ${getPokemonName(p)} ${status}`);
         });
+
         return;
     }
 
+    // --------------------
+    // NORMAL TURN
+    // --------------------
     if (active) {
         console.log('\nMoves:');
         active.moves.forEach((m, i) => {
-            console.log(`  move ${i + 1} -> ${m.move} (${m.pp}/${m.maxpp})`);
+            const status = m.disabled ? '[DISABLED]' : '[OK]';
+            console.log(`  move ${i + 1} -> ${m.move} (${m.pp}/${m.maxpp}) ${status}`);
         });
 
         console.log('\nSwitches:');
         side.pokemon.forEach((p, i) => {
-            if (!p.fainted && !p.active) {
-                console.log(`  switch ${i + 1} -> ${getPokemonName(p)}`);
-            }
+            const index = i + 1;
+
+            const isFainted = p.fainted || p.condition.startsWith('0 fnt');
+            const isActive = p.active;
+
+            const status = (!isFainted && !isActive) ? '[OK]' : '[DISABLED]';
+
+            console.log(`  switch ${index} -> ${getPokemonName(p)} ${status}`);
         });
     }
 }
 
-module.exports = { showBattleActions };
+function showSwitches(req) {
+    console.log("Must switch:");
+
+    req.side.pokemon.forEach((p, i) => {
+        let status = '';
+
+        if (p.fainted || p.condition === '0 fnt') {
+            status = '[FAINTED]';
+        }
+        else if (p.active) {
+            status = '[ACTIVE]';
+        }
+        else {
+            status = '[OK]';
+        }
+
+        console.log(`  switch ${i + 1} -> ${p.details} ${status}`);
+    });
+}
+
+module.exports = { showBattleActions, showSwitches };

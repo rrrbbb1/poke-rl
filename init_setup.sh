@@ -62,3 +62,5 @@ echo "******"
 echo "Setup complete!"
 echo "Environment: $ENV_NAME"
 echo "Showdown path: $SCRIPT_DIR/pokemon_showdown"
+
+conda activate poke-rl
