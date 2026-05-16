@@ -18,6 +18,11 @@ const lastError = {
     p2: null
 };
 
+const pendingResolve = {
+    p1: null,
+    p2: null
+};
+
 function parseRequest(line) {
     if (!line.includes('|request|')) return null;
     return JSON.parse(line.split('|request|')[1]);
@@ -75,7 +80,7 @@ async function handleRequestUI(req, playerId) {
 
     if (type === 'wait') {
         handleWait(req);
-        return null;
+        return;
     }
 
     if (type === 'move') handleMoveRequest(req);
@@ -84,19 +89,17 @@ async function handleRequestUI(req, playerId) {
     while (true) {
         const action = await choose(req);
 
+        if (!action) continue;
+
         engine.write(`>${playerId} ${action}`);
 
-        // wait for engine response
-        await new Promise(res => setTimeout(res, 50));
+        // instead of waiting → mark pending
+        pendingResolve[playerId] = {
+            req,
+            action
+        };
 
-        if (!lastError[playerId]) {
-            return action;
-        }
-
-        console.log(`\n${req.side.name}: invalid choice, try again.\n`);
-
-        // clear ONLY this player's error
-        lastError[playerId] = null;
+        return;
     }
 }
 
@@ -105,24 +108,22 @@ async function choose(req) {
 
     let prompt = `\nAction (${req.side.name})`;
 
-    if (type === 'forceSwitch') {
-        prompt += ' [switch only]';
-    } else if (type === 'move') {
-        prompt += ' [move/switch]';
-    }
+    if (type === 'forceSwitch') prompt += ' [switch only]';
+    else if (type === 'move') prompt += ' [move/switch]';
 
     prompt += ': ';
 
     const input = await ask(prompt);
     const trimmed = input.trim();
 
+    // ---- MOVE / SWITCH PARSING ----
     if (trimmed.startsWith('switch')) {
         const parts = trimmed.split(' ');
         const index = parseInt(parts[1], 10);
 
         if (!isValidSwitch(req, index)) {
-            console.log('Invalid switch (fainted or active Pokémon)');
-            return null;
+            console.log('❌ Invalid switch (fainted or active Pokémon)');
+            return undefined; // IMPORTANT FIX
         }
 
         return `switch ${index}`;
@@ -138,8 +139,8 @@ async function run() {
     let inBattle = false;
 
     for await (const line of engine.read()) {
-        console.log("LINE CHECK:")
-        console.log(line)
+        //console.log("LINE CHECK:")
+        //console.log(line)
         if (line === 'p1' || line === 'p2') {
             lastSide = line;
             continue;
@@ -153,17 +154,27 @@ async function run() {
             continue;
         }
 
+        if (line.startsWith('|error|')) {
+            console.log('\n* ERROR:', line.replace('|error|', ''));
+            const side = lastSide;
+            if (pendingResolve[side]) {
+                console.log(`\n${side} must retry action`);
+                // clear pending so they can re-enter loop
+                pendingResolve[side] = null;
+            }
+            continue;
+        }
 
         if (line.includes('|request|')) {
             const request = parseRequest(line);
             if (!request) continue;
-            printRequest(request);
+            //printRequest(request);
 
             const side = request.side;
             console.log('\n=================================================');
             //inspectBattleTeamsFromRequest(request)
             console.log('=================================================\n');
-            const action = await handleRequestUI(request, side.id);
+            await handleRequestUI(request, side.id);
             continue;
         }
 
