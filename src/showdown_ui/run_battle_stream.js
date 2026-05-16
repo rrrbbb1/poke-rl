@@ -1,4 +1,5 @@
 const readline = require('readline');
+
 const { StreamEngine } = require('./stream_engine');
 const { inspectBattleTeamsFromRequest } = require('./team_inspector');
 const { showBattleActions } = require('./action_view');
@@ -38,6 +39,9 @@ async function run() {
     let inBattle = false;
 
     for await (const line of engine.read()) {
+        console.log('*'.repeat(20))
+        console.log('LINE DEBUG')
+        console.log(line)
 
         // =========================
         // 0. DETECT TURN BOUNDARY
@@ -62,14 +66,6 @@ async function run() {
 
             const side = request.side;
 
-            // ---- FIRST TIME WE ENTER BATTLE ----
-            if (!inBattle) {
-                console.log('\n========= BATTLE START =========\n');
-                printBattleOutput(pregameBuffer);
-                pregameBuffer = [];
-                inBattle = true;
-            }
-
             console.log('\n=================================================');
             //inspectBattleTeamsFromRequest(request)
             console.log('=================================================\n');
@@ -89,15 +85,6 @@ async function run() {
             }
 
             continue;
-        }
-
-        // =========================
-        // 2. OUTPUT LOGS
-        // =========================
-        if (!inBattle) {
-            pregameBuffer.push(line);
-        } else {
-            bufferOutput.push(line);
         }
     }
 }
