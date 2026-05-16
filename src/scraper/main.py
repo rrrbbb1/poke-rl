@@ -132,7 +132,7 @@ def build_move_stats():
                 "type": move["type"]["name"] if move["type"] else None,
                 "damage_class": move["damage_class"]["name"] if move["damage_class"] else None,
                 "power": move["power"] or 0,
-                "accuracy": move["accuracy"] or 100,
+                "accuracy": move["accuracy"], #enlever or 100 pour avoir les None
                 "pp": move["pp"],
                 "priority": move["priority"],
 
