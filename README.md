@@ -13,12 +13,10 @@ The output is optimized for fast loading and modeling using **Parquet** and **JS
 
 # Installation
 
-## 1. Create the Conda environment
+## 1. Create Conda environment & install dependencies
 
-Using the provided `environment.yml`:
-    conda env create -f environment.yml
-Activate the environment:
-    conda activate poke-rl
+Run
+    bash init_setup.sh
 
 ## 2. Get data
 

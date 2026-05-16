@@ -9,3 +9,5 @@ dependencies:
   - tqdm
   - pandas
   - pyarrow
+
+  - nodejs>=18
