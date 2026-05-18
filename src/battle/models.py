@@ -177,7 +177,7 @@ class PokemonBuild:
         if len(self.moves) > 4:
             raise ValueError("A Pokémon cannot have more than 4 moves.")
 
-#Calcul toutes les stats du pokemon (avec des méthodes décritent après)
+#Calcul toutes les stats du pokemon (avec des méthodes décrites après)
     def calculate_stats(self) -> StatBlock:
         return StatBlock(
             hp=self._calculate_hp(),
